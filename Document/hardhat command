@@ -1,0 +1,118 @@
+npx hardhat compile -> compile project.
+npx hardhat test -> run all file test in ./test
+npx hardhat test test/<file_test> -> only run a file test
+npx hardhat coverage -> test and measure result
+
+# deploy contract
+    npx hardhat node
+    npx hardhat run --network localhost scripts/deploy.ts
+    npx hardhat run --network <your-network> scripts/deploy.ts
+
+# verifying your contract 
+
+    - etherscan
+        - Step 1: get api key in etherscan.
+        - Step 2: config in hardhat config    
+
+            ```typescript
+            export default {
+                // ...rest of the config...
+                etherscan: {
+                    apiKey: "...",
+                },
+            };
+            ```
+        
+        - Step 3: add Goerli testnet network to your Hardhat config( Using Alchemy or any JSON-RPC URL)
+        
+            ```typescript
+            // Go to https://www.alchemyapi.io, sign up, create
+            // a new App in its dashboard, and replace "KEY" with its key
+            const ALCHEMY_API_KEY = "KEY";
+
+            // Replace this private key with your Goerli account private key.
+            // To export your private key from Metamask, open Metamask and
+            // go to Account Details > Export Private Key.
+            // Beware: NEVER put real Ether into testing accounts
+            const GOERLI_PRIVATE_KEY = "YOUR GOERLI PRIVATE KEY";
+
+            export default {
+            // ...rest of your config...
+                networks: {
+                    goerli: {
+                    url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+                    accounts: [GOERLI_PRIVATE_KEY],
+                    },
+                },
+            };
+            ```
+            
+            **Note**: 
+                - We need send some Goerli ether to the address to going to be making the deployment. We can get testnet ether from a faucet:
+                    - https://faucets.chain.link/
+                    - https://goerlifaucet.com/
+        
+        - Step 4: Comment to make  the source code of our contract unique. 
+            add comment // Author: @<name>
+        
+        - Step 5: deploy script using the newly added Goerli network:
+            npx hardhat run scripts/deploy.ts --network goerli     
+
+        - Step 6: verifying contract:
+            npx hardhat verify --network goerli <address> <unlock time>
+
+    - sourcify
+
+# writing tasks and scripts
+    
+    - Writing task
+        
+        ```javascript
+        task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+            const accounts = await hre.ethers.getSigners();
+            for (const account of accounts) { console.log(account.address); }
+        });
+        ```
+
+        - Note:
+            - first argument: name of task
+            - second argument: description of task. When you use npx hardhat help -> which is printed
+            - third argument: async function that gets excuted when you run the task. It receives two agrument:
+                - taskArgs: object with the arguments for the task
+                - hre (Hardhat runtime environment): contains all the functionality ò hardhat and ít plugins
+
+        - Run task:
+            npx hardhat <name_task>
+
+    - Writing script:
+        - Create a file script in ./scripts <name>.js / <name>.ts
+
+        ```javascript
+        async function main() {
+            const accounts = await ethers.getSigners();
+
+            for (const account of accounts) {
+                console.log(account.address);
+            }
+        }
+
+        main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+        });
+        ```
+        - run scripts:
+            npx hardhat run <name>.js / <name>.ts
+
+
+# Tip choose tasks and scripts:
+
+    - If :
+        - automate the workflow that requires no parameters.
+        - need to access the HRE from another tool which has its own CLI, like jest or ndb.
+        - Hardhat's parameter handling is falling short(không đủ) of your needs.
+    -> should choose scripts
+
+    - If :
+        - automate the workflow that requires parameters.
+    -> should choose tasks

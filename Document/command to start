@@ -1,0 +1,5 @@
+npm init --y
+npm install --save-dev ts-node typescript
+npm install --save-dev chai @types/node @types/mocha @types/chai
+npx hardhat
+npm install --save-dev "hardhat@^2.10.1" "@nomicfoundation/hardhat-toolbox@^1.0.1"
